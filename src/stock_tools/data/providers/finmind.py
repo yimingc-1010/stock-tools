@@ -39,6 +39,9 @@ class FinMindPriceProvider(DailyPriceProvider):
         response = requests.get(self.base_url, params=params, timeout=self.timeout)
         response.raise_for_status()
         payload = response.json()
+        status = payload.get("status")
+        if status not in (None, 200):
+            raise RuntimeError(f"FinMind API error status={status} msg={payload.get('msg')!r}")
         return self.normalize_price_frame(symbol=symbol, payload=payload)
 
     def normalize_price_frame(self, *, symbol: str, payload: dict[str, Any]) -> pd.DataFrame:

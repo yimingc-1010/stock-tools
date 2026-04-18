@@ -10,8 +10,6 @@ import pandas as pd
 def _normalize_day(value: date | datetime | pd.Timestamp | str) -> date:
     if isinstance(value, datetime):
         return value.date()
-    if isinstance(value, pd.Timestamp):
-        return value.date()
     if isinstance(value, str):
         return pd.Timestamp(value).date()
     return value

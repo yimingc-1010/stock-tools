@@ -4,8 +4,6 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables or `.env`."""
@@ -16,9 +14,9 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    data_dir: Path = Field(default=PROJECT_ROOT / "data")
-    raw_data_dir: Path = Field(default=PROJECT_ROOT / "data" / "raw")
-    curated_data_dir: Path = Field(default=PROJECT_ROOT / "data" / "curated")
+    data_dir: Path = Field(default_factory=lambda: Path.cwd() / "data")
+    raw_data_dir: Path = Field(default_factory=lambda: Path.cwd() / "data" / "raw")
+    curated_data_dir: Path = Field(default_factory=lambda: Path.cwd() / "data" / "curated")
     cache_ttl_seconds: int = Field(default=86_400)
     default_market: str = Field(default="TW")
     finmind_api_token: str | None = Field(default=None)
