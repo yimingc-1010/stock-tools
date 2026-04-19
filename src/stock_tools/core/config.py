@@ -44,8 +44,8 @@ class Settings(BaseSettings):
 
     project_root: Path = Field(default_factory=discover_project_root)
     data_dir: Path = Field(default_factory=_default_data_dir)
-    raw_data_dir: Path = Field(default_factory=lambda: _default_data_dir() / "raw")
-    curated_data_dir: Path = Field(default_factory=lambda: _default_data_dir() / "curated")
+    raw_data_dir: Path
+    curated_data_dir: Path
     cache_ttl_seconds: int = Field(default=86_400)
     default_market: str = Field(default="TW")
     finmind_api_token: str | None = Field(default=None)
