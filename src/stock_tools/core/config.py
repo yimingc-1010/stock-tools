@@ -33,6 +33,14 @@ def _default_data_dir() -> Path:
     return discover_project_root() / "data"
 
 
+def _default_raw_data_dir() -> Path:
+    return _default_data_dir() / "raw"
+
+
+def _default_curated_data_dir() -> Path:
+    return _default_data_dir() / "curated"
+
+
 class Settings(BaseSettings):
     """Application settings loaded from environment variables or `.env`."""
 
@@ -44,8 +52,8 @@ class Settings(BaseSettings):
 
     project_root: Path = Field(default_factory=discover_project_root)
     data_dir: Path = Field(default_factory=_default_data_dir)
-    raw_data_dir: Path
-    curated_data_dir: Path
+    raw_data_dir: Path = Field(default_factory=_default_raw_data_dir)
+    curated_data_dir: Path = Field(default_factory=_default_curated_data_dir)
     cache_ttl_seconds: int = Field(default=86_400)
     default_market: str = Field(default="TW")
     finmind_api_token: str | None = Field(default=None)

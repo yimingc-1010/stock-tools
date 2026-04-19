@@ -23,7 +23,7 @@ This file is the shared repository task board for coordinated work across Codex 
 | ID | Task | Status | Priority | Owner | Branch | Notes |
 |---|---|---|---|---|---|---|
 | ST-001 | Establish initial project scaffold | Done | High | Codex | `feat/main-structure` | Initial package layout, docs, config, tests, and tooling are in place |
-| ST-002 | Remove launch-directory dependency from default data paths | Review | High | Codex | `feat/main-structure` | Stable project-root discovery and regression tests are implemented; waiting for acceptance |
+| ST-002 | Remove launch-directory dependency from default data paths | Review | High | Codex | `feat/main-structure` | Stable project-root discovery is intact and the follow-up fix restores a `mypy`-clean build |
 | ST-003 | Build FinMind daily price provider proof of concept | Planned | High | Unassigned | `feat/main-structure` | Pull one symbol and normalize to the daily price contract |
 | ST-004 | Add Parquet round-trip flow for daily prices and adjustment factors | Planned | High | Unassigned | `feat/main-structure` | Persist raw prices separately from adjustment data |
 | ST-005 | Expand TWSE calendar beyond weekday defaults | Planned | Medium | Unassigned | `feat/main-structure` | Add official closures and exchange-specific overrides |
