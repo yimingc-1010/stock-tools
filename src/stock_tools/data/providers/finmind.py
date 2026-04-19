@@ -5,6 +5,7 @@ from typing import Any
 import pandas as pd
 import requests
 
+from stock_tools.core.schemas import DAILY_PRICE_SCHEMA, validate_required_columns
 from stock_tools.data.providers.base import DailyPriceProvider
 
 
@@ -61,6 +62,7 @@ class FinMindPriceProvider(DailyPriceProvider):
             }
         )
         renamed["symbol"] = symbol
+        validate_required_columns(renamed, DAILY_PRICE_SCHEMA)
         ordered = renamed[["symbol", "date", "open", "high", "low", "close", "volume", "turnover"]]
         ordered["date"] = pd.to_datetime(ordered["date"])
         return ordered.sort_values("date").reset_index(drop=True)
