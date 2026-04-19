@@ -12,31 +12,21 @@ from stock_tools.data.datasets.roundtrip import (
 )
 from stock_tools.data.storage.parquet import ParquetStore
 
+FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures"
+
 
 def _daily_price_frame(symbol: str) -> pd.DataFrame:
-    return pd.DataFrame(
-        {
-            "symbol": [symbol, symbol],
-            "date": pd.to_datetime(["2024-01-02", "2024-01-03"]),
-            "open": [10.0, 11.0],
-            "high": [10.5, 11.5],
-            "low": [9.8, 10.7],
-            "close": [10.2, 11.2],
-            "volume": [1000, 1100],
-            "turnover": [10200.0, 12320.0],
-        }
-    )
+    frame = pd.read_csv(FIXTURE_DIR / "daily_prices_2330.csv")
+    frame["symbol"] = symbol
+    frame["date"] = pd.to_datetime(frame["date"])
+    return frame
 
 
 def _adjustment_frame(symbol: str) -> pd.DataFrame:
-    return pd.DataFrame(
-        {
-            "symbol": [symbol],
-            "effective_date": pd.to_datetime(["2024-01-03"]),
-            "adjustment_factor": [0.98],
-            "event_type": ["cash_dividend"],
-        }
-    )
+    frame = pd.read_csv(FIXTURE_DIR / "adjustment_factors_2330.csv")
+    frame["symbol"] = symbol
+    frame["effective_date"] = pd.to_datetime(frame["effective_date"])
+    return frame
 
 
 def test_parquet_round_trip_for_prices_and_adjustments(tmp_path: Path) -> None:
