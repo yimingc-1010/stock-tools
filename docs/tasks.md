@@ -25,7 +25,7 @@ This file is the shared repository task board for coordinated work across Codex 
 | ST-001 | Establish initial project scaffold | Done | High | Codex | `feat/main-structure` | Initial package layout, docs, config, tests, and tooling are in place |
 | ST-002 | Remove launch-directory dependency from default data paths | Review | High | Codex | `feat/main-structure` | Stable project-root discovery is intact and the follow-up fix restores a `mypy`-clean build |
 | ST-003 | Build FinMind daily price provider proof of concept | Review | High | Codex | `feat/main-structure` | Pull one symbol and normalize to the daily price contract; provider contract tests and `scripts/finmind_daily_price_poc.py` added |
-| ST-004 | Add Parquet round-trip flow for daily prices and adjustment factors | Planned | High | Unassigned | `feat/main-structure` | Persist raw prices separately from adjustment data |
+| ST-004 | Add Parquet round-trip flow for daily prices and adjustment factors | Review | High | Codex | `feat/main-structure` | Persist raw prices separately from adjustment data; added round-trip dataset flow/tests and `scripts/parquet_roundtrip_poc.py` |
 | ST-005 | Expand TWSE calendar beyond weekday defaults | Planned | Medium | Unassigned | `feat/main-structure` | Add official closures and exchange-specific overrides |
 | ST-006 | Add fixed local fixtures for data-layer tests | Planned | Medium | Unassigned | `feat/main-structure` | Keep unit tests fully offline and reproducible |
 | ST-007 | Create end-to-end research notebook | Planned | Medium | Unassigned | `feat/main-structure` | Validate fetch -> store -> load -> plot workflow |

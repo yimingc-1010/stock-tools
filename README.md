@@ -17,3 +17,10 @@ Use the script wrapper to fetch and normalize one symbol:
 
 `python3 scripts/finmind_daily_price_poc.py --symbol 2330 --start-date 2024-01-02 --end-date 2024-01-10`
 
+## Parquet round-trip POC (daily prices + adjustment factors)
+
+Use the script wrapper to fetch one symbol, persist raw + curated daily prices, and persist
+adjustment factors in a separate dataset file:
+
+`python3 scripts/parquet_roundtrip_poc.py --symbol 2330 --start-date 2024-01-02 --end-date 2024-01-10`
+
