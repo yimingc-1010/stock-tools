@@ -32,3 +32,8 @@ task `Done` only when all checks pass.
 
 `python3 scripts/task_review_test_loop.py`
 
+## End-to-end research notebook
+
+Use `notebooks/end_to_end_research.ipynb` to walk through fetch -> store -> load -> plot for one
+symbol using the current data-layer contracts.
+
