@@ -19,8 +19,7 @@ class RoundTripResult:
     adjustment_factors: pd.DataFrame
 
 
-def build_empty_adjustment_factor_frame(symbol: str) -> pd.DataFrame:
-    del symbol
+def build_empty_adjustment_factor_frame() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "symbol": pd.Series(dtype="object"),

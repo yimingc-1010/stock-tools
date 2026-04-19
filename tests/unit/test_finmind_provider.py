@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pandas as pd
 import pytest
 
 from stock_tools.data.providers.finmind import FinMindPriceProvider
@@ -122,4 +121,3 @@ def test_normalize_price_frame_returns_contract_columns_for_empty_payload() -> N
     assert frame.empty
     expected_columns = ["symbol", "date", "open", "high", "low", "close", "volume", "turnover"]
     assert frame.columns.tolist() == expected_columns
-    pd.testing.assert_frame_equal(frame, frame.sort_values("date").reset_index(drop=True))

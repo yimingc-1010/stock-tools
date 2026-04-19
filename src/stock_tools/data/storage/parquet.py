@@ -36,25 +36,28 @@ class ParquetStore:
         )
 
     def write_raw_daily_prices(self, symbol: str, frame: pd.DataFrame) -> Path:
-        relative_path = self.raw_daily_prices_path(symbol).relative_to(self.root_dir)
-        return self.write_frame(relative_path, frame)
+        path = self.raw_daily_prices_path(symbol)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_parquet(path, index=False)
+        return path
 
     def read_raw_daily_prices(self, symbol: str) -> pd.DataFrame:
-        relative_path = self.raw_daily_prices_path(symbol).relative_to(self.root_dir)
-        return self.read_frame(relative_path)
+        return pd.read_parquet(self.raw_daily_prices_path(symbol))
 
     def write_daily_prices(self, symbol: str, frame: pd.DataFrame) -> Path:
-        relative_path = self.daily_prices_path(symbol).relative_to(self.root_dir)
-        return self.write_frame(relative_path, frame)
+        path = self.daily_prices_path(symbol)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_parquet(path, index=False)
+        return path
 
     def read_daily_prices(self, symbol: str) -> pd.DataFrame:
-        relative_path = self.daily_prices_path(symbol).relative_to(self.root_dir)
-        return self.read_frame(relative_path)
+        return pd.read_parquet(self.daily_prices_path(symbol))
 
     def write_adjustment_factors(self, symbol: str, frame: pd.DataFrame) -> Path:
-        relative_path = self.adjustment_factors_path(symbol).relative_to(self.root_dir)
-        return self.write_frame(relative_path, frame)
+        path = self.adjustment_factors_path(symbol)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_parquet(path, index=False)
+        return path
 
     def read_adjustment_factors(self, symbol: str) -> pd.DataFrame:
-        relative_path = self.adjustment_factors_path(symbol).relative_to(self.root_dir)
-        return self.read_frame(relative_path)
+        return pd.read_parquet(self.adjustment_factors_path(symbol))

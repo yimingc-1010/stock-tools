@@ -62,7 +62,7 @@ def test_roundtrip_flow_returns_reloaded_frames_and_separate_paths(tmp_path: Pat
     store = ParquetStore(root_dir=tmp_path)
     symbol = "2330"
     prices = _daily_price_frame(symbol)
-    adjustments = build_empty_adjustment_factor_frame(symbol=symbol)
+    adjustments = build_empty_adjustment_factor_frame()
 
     result = roundtrip_prices_and_adjustments(
         store=store,

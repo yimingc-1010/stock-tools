@@ -24,3 +24,11 @@ adjustment factors in a separate dataset file:
 
 `python3 scripts/parquet_roundtrip_poc.py --symbol 2330 --start-date 2024-01-02 --end-date 2024-01-10`
 
+## Task execution loop (implement -> review -> test)
+
+Run an interactive loop that processes `docs/tasks.md` in order. For each unfinished task, it
+waits for implementation, then runs review/test gates (`pytest`, `ruff`, `mypy`) and marks the
+task `Done` only when all checks pass.
+
+`python3 scripts/task_review_test_loop.py`
+

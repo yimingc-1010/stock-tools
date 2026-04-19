@@ -39,7 +39,7 @@ def main() -> int:
         start_date=args.start_date,
         end_date=args.end_date,
     )
-    adjustment_factors = build_empty_adjustment_factor_frame(symbol=args.symbol)
+    adjustment_factors = build_empty_adjustment_factor_frame()
 
     result = roundtrip_prices_and_adjustments(
         store=store,

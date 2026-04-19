@@ -63,7 +63,9 @@ class FinMindPriceProvider(DailyPriceProvider):
         )
         renamed["symbol"] = symbol
         validate_required_columns(renamed, DAILY_PRICE_SCHEMA)
-        ordered = renamed[["symbol", "date", "open", "high", "low", "close", "volume", "turnover"]]
+        ordered = renamed[
+            ["symbol", "date", "open", "high", "low", "close", "volume", "turnover"]
+        ].copy()
         ordered["date"] = pd.to_datetime(ordered["date"])
         return ordered.sort_values("date").reset_index(drop=True)
 
