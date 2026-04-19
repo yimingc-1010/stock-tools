@@ -88,8 +88,38 @@ class TradingCalendar:
         )
 
 
-def build_twse_calendar() -> TradingCalendar:
-    """Return a TWSE calendar shell to be extended with official exchange closures."""
+TWSE_HOLIDAYS_2026 = frozenset(
+    {
+        date(2026, 1, 1),
+        date(2026, 2, 12),
+        date(2026, 2, 13),
+        date(2026, 2, 15),
+        date(2026, 2, 16),
+        date(2026, 2, 17),
+        date(2026, 2, 18),
+        date(2026, 2, 19),
+        date(2026, 2, 20),
+        date(2026, 2, 27),
+        date(2026, 2, 28),
+        date(2026, 4, 3),
+        date(2026, 4, 4),
+        date(2026, 4, 5),
+        date(2026, 4, 6),
+        date(2026, 5, 1),
+        date(2026, 6, 19),
+        date(2026, 9, 25),
+        date(2026, 9, 28),
+        date(2026, 10, 9),
+        date(2026, 10, 10),
+        date(2026, 10, 25),
+        date(2026, 10, 26),
+        date(2026, 12, 25),
+    }
+)
 
-    return TradingCalendar()
+
+def build_twse_calendar() -> TradingCalendar:
+    """Return a TWSE calendar with official 2026 closures."""
+
+    return TradingCalendar(holidays=TWSE_HOLIDAYS_2026)
 
