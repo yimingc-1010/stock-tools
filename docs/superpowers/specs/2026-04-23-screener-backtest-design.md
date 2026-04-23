@@ -76,6 +76,7 @@ Behaviour:
 - Concurrency: configurable (default 3 workers), with per-request delay (default 0.5s)
 - Failed symbols are logged and skipped; pipeline always completes
 - Prints summary: succeeded / failed / skipped counts
+- Enforces quality gates: fail the batch when success ratio is below threshold (default 98%), or when configurable critical symbols fail
 
 The pipeline is the only component that calls providers. All downstream layers read from local storage.
 
@@ -110,10 +111,17 @@ result: pd.DataFrame = screener.run(
 ```
 
 - `date` drives `get_active_symbols` for universe, and selects the lookback window from local prices
-- Conditions are a plain dict; unsupported keys raise `ValueError`
+- Conditions use a typed schema (`TechnicalConditions`) and are parsed from plain dict input; unsupported keys raise `ValueError`
 - Output is a DataFrame with fixed columns: `symbol, close, <indicator columns>, matched_conditions`
 - Output is `.to_dict(orient="records")` serializable for agent/bot consumption
 - No network calls inside `run()`
+
+Supported v1 condition keys:
+- `rsi_below: float`
+- `price_above_ema: int` (window)
+- `macd_golden_cross: bool`
+
+The typed schema is intentionally non-plugin and closed for v1 (YAGNI), but gives strict validation and forward-compatible extension points.
 
 ## Fundamental Screener (Phase 4)
 
@@ -145,20 +153,33 @@ result = screener.run(date="2026-04-23", conditions={"foreign_net_buy_days": 3})
 ```python
 result: dict = run_backtest(
     symbols=["2330", "2317"],
-    signal_fn=my_signal_fn,      # (prices: DataFrame) -> bool DataFrame
+    signal_fn=my_signal_fn,      # (prices: DataFrame) -> dict[str, pd.DataFrame]
     start_date="2024-01-01",
     end_date="2026-04-23",
     initial_capital=1_000_000,
     fee_rate=0.001425,
     tax_rate=0.003,
+    min_commission=20.0,
+    slippage_bps=5,
 )
 # result keys: total_return, sharpe_ratio, max_drawdown, calmar_ratio, win_rate, trade_count
 ```
 
-- `signal_fn` is the sole strategy entry point; output from `TechnicalScreener` can be wrapped into one
-- Prices are adjusted using `AdjustmentFactorDataset` before passing to vectorbt
+- `signal_fn` is the sole strategy entry point and returns:
+  - `entries: pd.DataFrame[bool]`
+  - `exits: pd.DataFrame[bool]`
+  - optional `size: pd.DataFrame[float]`
+- All returned frames must share the same `DatetimeIndex` and symbol columns as the input prices
+- Prices are adjusted with point-in-time safety only (`as_of_date` cumulative factor); never apply future corporate actions to historical bars
 - `backtest/metrics.py` extended with `sharpe_ratio`, `calmar_ratio`, `win_rate`
+- Taiwan market cost model includes fee, tax, minimum commission, and slippage assumptions
 - Result dict is JSON-serializable
+
+Execution assumptions (v1 defaults):
+- End-of-day bar execution (signal on close[t], execute at close[t] for simplicity in v1)
+- Long-only
+- Cash-sharing across symbols enabled
+- Daily rebalance, no leverage
 
 ## Performance Metrics Extensions
 
@@ -166,6 +187,46 @@ Add to `src/stock_tools/backtest/metrics.py`:
 - `sharpe_ratio(returns, risk_free_rate=0.0) -> float`
 - `calmar_ratio(total_return, max_drawdown) -> float`
 - `win_rate(trades: pd.DataFrame) -> float`
+
+## Dataset Contracts
+
+All curated datasets must define required columns, dtypes, and uniqueness keys.
+
+- `security_master/master.parquet`
+  - Required columns: `symbol, market, list_date, delist_date`
+  - Unique key: `symbol`
+- `prices/{symbol}.parquet`
+  - Required columns: `symbol, date, open, high, low, close, volume, turnover`
+  - Unique key: `(symbol, date)`
+- `adjustments/{symbol}.parquet`
+  - Required columns: `symbol, date, adjustment_factor`
+  - Unique key: `(symbol, date)`
+- `fundamentals/{symbol}.parquet`
+  - Required columns include `symbol, announcement_date, metric_name, metric_value`
+  - Unique key: `(symbol, announcement_date, metric_name)`
+
+## Calendar & Alignment Rules
+
+- The trading calendar is TWSE/TPEx daily calendar from `stock_tools.core.calendar`.
+- For screener/backtest date selection on non-trading day, fallback to the previous trading day.
+- Multi-symbol operations use inner join on dates by default to avoid synthetic forward-fill bias.
+- Missing data after alignment excludes the symbol for that date and is recorded in diagnostics.
+
+## Reproducibility & Metadata
+
+Backtest output must include metadata fields in addition to performance metrics:
+- `start_date`, `end_date`
+- `symbols`
+- `cost_model` (`fee_rate`, `tax_rate`, `min_commission`, `slippage_bps`)
+- `data_version` (or storage snapshot timestamp)
+- `strategy_params`
+
+## Acceptance Criteria Highlights
+
+- ST-010: Batch ingestion exits non-zero when quality gate fails; otherwise prints deterministic summary counts.
+- ST-013: `TechnicalScreener.run()` returns fixed columns and stable row ordering (`symbol` ascending) for deterministic bot output.
+- ST-014: Adapter validates signal frame shape/index/columns before portfolio run and raises actionable errors on mismatch.
+- ST-015: New metrics include unit tests for empty input, edge cases, and nominal cases.
 
 ## Task Plan
 
