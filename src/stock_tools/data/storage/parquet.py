@@ -61,3 +61,15 @@ class ParquetStore:
 
     def read_adjustment_factors(self, symbol: str) -> pd.DataFrame:
         return pd.read_parquet(self.adjustment_factors_path(symbol))
+
+    def security_master_path(self) -> Path:
+        return self.root_dir / "curated" / "security_master" / "master.parquet"
+
+    def write_security_master(self, frame: pd.DataFrame) -> Path:
+        path = self.security_master_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        frame.to_parquet(path, index=False)
+        return path
+
+    def read_security_master(self) -> pd.DataFrame:
+        return pd.read_parquet(self.security_master_path())
