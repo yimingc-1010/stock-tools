@@ -7,7 +7,7 @@ import requests
 
 from stock_tools.core.schemas import SECURITY_MASTER_SCHEMA, validate_required_columns
 
-_MARKET_MAP = {"twse": "TWSE", "otc": "TPEx", "rotc": "TPEx"}
+_MARKET_MAP = {"twse": "TWSE", "tpex": "TPEx", "emerging": "Emerging"}
 
 
 class UniverseProvider:

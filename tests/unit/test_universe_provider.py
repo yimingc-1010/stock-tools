@@ -20,17 +20,17 @@ MOCK_RESPONSE = {
         {
             "stock_id": "6488",
             "stock_name": "環球晶",
-            "type": "otc",
+            "type": "tpex",
             "date": "2024-01-01",
             "industry_category": "半導體業",
             "market_category": "上櫃",
         },
         {
-            "stock_id": "5483",
-            "stock_name": "中美晶",
-            "type": "rotc",
-            "date": "2024-01-01",
-            "industry_category": "半導體業",
+            "stock_id": "4578",
+            "stock_name": "總格精密",
+            "type": "emerging",
+            "date": "2024-04-25",
+            "industry_category": "電機機械",
             "market_category": "興櫃",
         },
     ],
@@ -57,9 +57,9 @@ def test_fetch_normalises_columns(mock_get: MagicMock) -> None:
         "list_date",
         "delist_date",
     ]
-    assert frame["symbol"].tolist() == ["2330", "6488", "5483"]
-    assert frame["name"].tolist() == ["台積電", "環球晶", "中美晶"]
-    assert frame["market"].tolist() == ["TWSE", "TPEx", "TPEx"]
+    assert frame["symbol"].tolist() == ["2330", "6488", "4578"]
+    assert frame["name"].tolist() == ["台積電", "環球晶", "總格精密"]
+    assert frame["market"].tolist() == ["TWSE", "TPEx", "Emerging"]
     assert (frame["security_type"] == "stock").all()
 
 
