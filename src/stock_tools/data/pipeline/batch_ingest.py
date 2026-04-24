@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
@@ -39,6 +40,18 @@ class BatchPriceIngestor:
         self.request_delay = request_delay
         self.success_threshold = success_threshold
         self.historical_start = historical_start
+        self._rate_lock = threading.Lock()
+        self._last_request_ts = 0.0
+
+    def _throttle(self) -> None:
+        """Enforce a global minimum interval between provider calls across threads."""
+        with self._rate_lock:
+            now = time.monotonic()
+            elapsed = now - self._last_request_ts
+            wait = self.request_delay - elapsed
+            if wait > 0:
+                time.sleep(wait)
+            self._last_request_ts = time.monotonic()
 
     def run(self, symbols: list[str], *, end_date: str) -> IngestSummary:
         succeeded = 0
@@ -96,7 +109,7 @@ class BatchPriceIngestor:
                 return "skipped"
             start_date = next_date.strftime("%Y-%m-%d")
 
-        time.sleep(self.request_delay)
+        self._throttle()
         new_frame = self.provider.fetch_daily_prices(
             symbol, start_date=start_date, end_date=end_date
         )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -125,3 +126,26 @@ def test_ingest_raises_when_below_success_threshold(tmp_path: Path) -> None:
     )
     with pytest.raises(RuntimeError, match="success rate"):
         ingestor.run(["2330", "3008"], end_date="2026-04-02")
+
+
+def test_throttle_enforces_global_rate_limit(tmp_path: Path) -> None:
+    """With 2 workers and 0.2s delay, 4 sequential fetches must take >= 0.6s total
+    (3 gaps of 0.2s each). Per-thread sleep would only produce 0.2s total."""
+    store = ParquetStore(tmp_path)
+
+    mock_provider = MagicMock()
+    mock_provider.fetch_daily_prices.return_value = _make_price_frame(
+        "X", ["2026-04-02"]
+    )
+    ingestor = BatchPriceIngestor(
+        mock_provider, store, max_workers=2, request_delay=0.2
+    )
+
+    start = time.monotonic()
+    ingestor.run(["A", "B", "C", "D"], end_date="2026-04-02")
+    elapsed = time.monotonic() - start
+
+    # 4 calls, global throttle of 0.2s -> first call fires immediately,
+    # the other 3 each wait 0.2s -> >= 0.6s total.
+    # Allow some wiggle room: expect >= 0.5s to avoid flakiness.
+    assert elapsed >= 0.5, f"Rate limiting too fast: {elapsed:.3f}s"
