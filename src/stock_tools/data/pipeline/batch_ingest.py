@@ -8,8 +8,8 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
+from stock_tools.data.datasets.prices import DailyPriceDataset
 from stock_tools.data.providers.base import DailyPriceProvider
-from stock_tools.data.storage.parquet import ParquetStore
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class BatchPriceIngestor:
     def __init__(
         self,
         provider: DailyPriceProvider,
-        store: ParquetStore,
+        dataset: DailyPriceDataset,
         *,
         max_workers: int = 3,
         request_delay: float = 0.5,
@@ -35,7 +35,7 @@ class BatchPriceIngestor:
         historical_start: str = "2010-01-01",
     ) -> None:
         self.provider = provider
-        self.store = store
+        self.dataset = dataset
         self.max_workers = max_workers
         self.request_delay = request_delay
         self.success_threshold = success_threshold
@@ -97,12 +97,15 @@ class BatchPriceIngestor:
         return summary
 
     def _ingest_symbol(self, symbol: str, end_date: str) -> str:
-        path = self.store.daily_prices_path(symbol)
         start_date = self.historical_start
         existing: pd.DataFrame | None = None
 
-        if path.exists():
-            existing = self.store.read_daily_prices(symbol)
+        try:
+            existing = self.dataset.load(symbol)
+        except FileNotFoundError:
+            pass
+
+        if existing is not None and not existing.empty:
             last_date = pd.to_datetime(existing["date"]).max()
             next_date = last_date + pd.Timedelta(days=1)
             if next_date > pd.Timestamp(end_date):
@@ -117,12 +120,12 @@ class BatchPriceIngestor:
         if new_frame.empty:
             return "skipped"
 
-        if existing is not None:
+        if existing is not None and not existing.empty:
             combined = pd.concat([existing, new_frame], ignore_index=True)
             combined = combined.drop_duplicates(subset=["symbol", "date"])
             combined = combined.sort_values("date").reset_index(drop=True)
         else:
             combined = new_frame
 
-        self.store.write_daily_prices(symbol, combined)
+        self.dataset.save(symbol, combined)
         return "ok"

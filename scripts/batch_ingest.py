@@ -8,6 +8,7 @@ import sys
 from datetime import date
 
 from stock_tools.core.config import Settings
+from stock_tools.data.datasets.prices import DailyPriceDataset
 from stock_tools.data.datasets.universe import SecurityMasterDataset
 from stock_tools.data.pipeline.batch_ingest import BatchPriceIngestor
 from stock_tools.data.providers.finmind import FinMindPriceProvider
@@ -42,9 +43,10 @@ def main() -> None:
         )
         sys.exit(1)
     provider = FinMindPriceProvider(api_token=settings.finmind_api_token)
+    dataset = DailyPriceDataset(store)
     ingestor = BatchPriceIngestor(
         provider,
-        store,
+        dataset,
         max_workers=args.workers,
         request_delay=args.delay,
         success_threshold=args.threshold,
