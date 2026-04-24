@@ -11,4 +11,5 @@ data/**/*.parquet
 *.egg-info/
 build/
 dist/
-
+node_modules
+.DS_Store
