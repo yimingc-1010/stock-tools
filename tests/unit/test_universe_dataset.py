@@ -18,6 +18,8 @@ def test_security_master_roundtrip(tmp_path: Path) -> None:
         "delist_date": pd.NaT,
     })
     store.write_security_master(frame)
-    loaded = store.read_security_master()
-    assert list(loaded["symbol"]) == ["2330", "3008"]
     assert store.security_master_path().exists()
+    loaded = store.read_security_master()
+    pd.testing.assert_frame_equal(
+        loaded.reset_index(drop=True), frame.reset_index(drop=True)
+    )
