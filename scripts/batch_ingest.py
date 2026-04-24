@@ -19,6 +19,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 def main() -> None:
     parser = argparse.ArgumentParser(description="Batch ingest daily prices")
     parser.add_argument("--date", default=str(date.today()), help="End date YYYY-MM-DD")
+    parser.add_argument(
+        "--start-date",
+        default="2010-01-01",
+        help="Historical start date for symbols with no local data",
+    )
     parser.add_argument("--workers", type=int, default=3)
     parser.add_argument("--delay", type=float, default=0.5)
     parser.add_argument("--threshold", type=float, default=0.98)
@@ -35,6 +40,7 @@ def main() -> None:
         max_workers=args.workers,
         request_delay=args.delay,
         success_threshold=args.threshold,
+        historical_start=args.start_date,
     )
 
     print(f"Ingesting {len(symbols)} symbols up to {args.date} ...")

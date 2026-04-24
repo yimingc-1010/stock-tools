@@ -31,12 +31,14 @@ class BatchPriceIngestor:
         max_workers: int = 3,
         request_delay: float = 0.5,
         success_threshold: float = 0.98,
+        historical_start: str = "2010-01-01",
     ) -> None:
         self.provider = provider
         self.store = store
         self.max_workers = max_workers
         self.request_delay = request_delay
         self.success_threshold = success_threshold
+        self.historical_start = historical_start
 
     def run(self, symbols: list[str], *, end_date: str) -> IngestSummary:
         succeeded = 0
@@ -83,7 +85,7 @@ class BatchPriceIngestor:
 
     def _ingest_symbol(self, symbol: str, end_date: str) -> str:
         path = self.store.daily_prices_path(symbol)
-        start_date = end_date
+        start_date = self.historical_start
         existing: pd.DataFrame | None = None
 
         if path.exists():

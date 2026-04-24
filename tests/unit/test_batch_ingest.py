@@ -38,6 +38,25 @@ def test_ingest_new_symbol(tmp_path: Path) -> None:
     assert summary.failed == 0
     assert summary.skipped == 0
     assert store.daily_prices_path("2330").exists()
+    mock_provider.fetch_daily_prices.assert_called_once_with(
+        "2330", start_date="2010-01-01", end_date="2026-04-02"
+    )
+
+
+def test_ingest_new_symbol_uses_custom_historical_start(tmp_path: Path) -> None:
+    store = ParquetStore(tmp_path)
+    mock_provider = MagicMock()
+    mock_provider.fetch_daily_prices.return_value = _make_price_frame(
+        "2330", ["2020-01-02", "2026-04-02"]
+    )
+    ingestor = BatchPriceIngestor(
+        mock_provider, store, request_delay=0, historical_start="2020-01-01"
+    )
+    summary = ingestor.run(["2330"], end_date="2026-04-02")
+    assert summary.succeeded == 1
+    mock_provider.fetch_daily_prices.assert_called_once_with(
+        "2330", start_date="2020-01-01", end_date="2026-04-02"
+    )
 
 
 def test_ingest_incremental_update(tmp_path: Path) -> None:
