@@ -25,6 +25,14 @@ MOCK_RESPONSE = {
             "industry_category": "半導體業",
             "market_category": "上櫃",
         },
+        {
+            "stock_id": "5483",
+            "stock_name": "中美晶",
+            "type": "rotc",
+            "date": "2024-01-01",
+            "industry_category": "半導體業",
+            "market_category": "興櫃",
+        },
     ],
 }
 
@@ -49,7 +57,9 @@ def test_fetch_normalises_columns(mock_get: MagicMock) -> None:
         "list_date",
         "delist_date",
     ]
-    assert frame["market"].tolist() == ["TWSE", "TPEx"]
+    assert frame["symbol"].tolist() == ["2330", "6488", "5483"]
+    assert frame["name"].tolist() == ["台積電", "環球晶", "中美晶"]
+    assert frame["market"].tolist() == ["TWSE", "TPEx", "TPEx"]
     assert (frame["security_type"] == "stock").all()
 
 
@@ -75,3 +85,25 @@ def test_fetch_empty_payload(mock_get: MagicMock) -> None:
         "list_date",
         "delist_date",
     ]
+
+
+@patch("stock_tools.data.providers.universe.requests.get")
+def test_fetch_maps_unknown_type_to_other(mock_get: MagicMock) -> None:
+    mock_get.return_value = _mock_get(
+        {
+            "status": 200,
+            "data": [
+                {
+                    "stock_id": "9999",
+                    "stock_name": "未知類型",
+                    "type": "foo",
+                    "date": "2024-01-01",
+                    "industry_category": "其他",
+                    "market_category": "其他",
+                },
+            ],
+        }
+    )
+    provider = UniverseProvider()
+    frame = provider.fetch_all()
+    assert frame["market"].tolist() == ["OTHER"]

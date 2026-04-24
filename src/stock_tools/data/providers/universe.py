@@ -5,16 +5,9 @@ from typing import Any
 import pandas as pd
 import requests
 
-_MARKET_MAP = {"twse": "TWSE", "otc": "TPEx", "rotc": "TPEx"}
+from stock_tools.core.schemas import SECURITY_MASTER_SCHEMA, validate_required_columns
 
-_SECURITY_MASTER_COLUMNS = [
-    "symbol",
-    "name",
-    "security_type",
-    "market",
-    "list_date",
-    "delist_date",
-]
+_MARKET_MAP = {"twse": "TWSE", "otc": "TPEx", "rotc": "TPEx"}
 
 
 class UniverseProvider:
@@ -42,11 +35,13 @@ class UniverseProvider:
     def _normalise(self, payload: dict[str, Any]) -> pd.DataFrame:
         rows = payload.get("data", [])
         if not rows:
-            return pd.DataFrame(columns=_SECURITY_MASTER_COLUMNS)
+            return pd.DataFrame(columns=list(SECURITY_MASTER_SCHEMA.required_columns))
         frame = pd.DataFrame(rows)
         frame = frame.rename(columns={"stock_id": "symbol", "stock_name": "name"})
         frame["market"] = frame["type"].map(_MARKET_MAP).fillna("OTHER")
         frame["security_type"] = "stock"
         frame["list_date"] = pd.NaT
         frame["delist_date"] = pd.NaT
-        return frame[_SECURITY_MASTER_COLUMNS].copy()
+        result = frame[list(SECURITY_MASTER_SCHEMA.required_columns)].copy()
+        validate_required_columns(result, SECURITY_MASTER_SCHEMA)
+        return result
