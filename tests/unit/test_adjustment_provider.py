@@ -116,3 +116,20 @@ def test_cash_dividend_with_zero_prev_close(mock_get: MagicMock) -> None:
     cash_row = frame[frame["effective_date"] == pd.Timestamp("2023-07-18")].iloc[0]
     # prev_close == 0 -> cash_factor falls back to 1.0
     assert cash_row["adjustment_factor"] == 1.0
+
+
+@patch("stock_tools.data.providers.adjustment.requests.get")
+def test_cash_dividend_larger_than_prev_close_returns_one(
+    mock_get: MagicMock,
+) -> None:
+    """Guard against negative factor: if cash_div >= prev_close, fall back to 1.0."""
+    mock_get.return_value = _mock_get(MOCK_DIVIDEND_RESPONSE)
+    price_frame = pd.DataFrame({
+        "symbol": ["2330"] * 2,
+        "date": pd.to_datetime(["2023-07-14", "2023-07-17"]),
+        "close": [2.0, 2.0],  # prior close < cash dividend (3.0 in the fixture)
+    })
+    provider = FinMindAdjustmentProvider()
+    frame = provider.fetch_adjustment_factors("2330", price_frame=price_frame)
+    cash_row = frame[frame["effective_date"] == pd.Timestamp("2023-07-18")].iloc[0]
+    assert cash_row["adjustment_factor"] == 1.0

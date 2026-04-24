@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import pandas as pd
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 class FinMindAdjustmentProvider:
@@ -87,5 +90,12 @@ class FinMindAdjustmentProvider:
             return 1.0
         prev_close = float(prices_before.iloc[-1]["close"])
         if prev_close <= 0:
+            return 1.0
+        if cash_div >= prev_close:
+            logger.warning(
+                "Cash dividend %.4f >= prior close %.4f on ex-date %s; "
+                "skipping cash factor to avoid negative adjustment",
+                cash_div, prev_close, ex_date,
+            )
             return 1.0
         return (prev_close - cash_div) / prev_close
