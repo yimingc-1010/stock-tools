@@ -32,7 +32,15 @@ def main() -> None:
     settings = Settings()
     store = ParquetStore(settings.data_dir)
     universe = SecurityMasterDataset(store)
-    symbols = universe.get_active_symbols(args.date)
+    try:
+        symbols = universe.get_active_symbols(args.date)
+    except FileNotFoundError:
+        print(
+            "ERROR: security master not found. "
+            "Run `python scripts/fetch_universe.py` first to populate it.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
     provider = FinMindPriceProvider(api_token=settings.finmind_api_token)
     ingestor = BatchPriceIngestor(
         provider,
