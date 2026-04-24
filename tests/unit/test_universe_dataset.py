@@ -64,3 +64,15 @@ def test_get_active_symbols_with_nat_list_date(tmp_path: Path) -> None:
     active = ds.get_active_symbols("2026-01-01")
     assert "2330" in active
     assert "9999" not in active  # still excluded by delist_date
+
+
+def test_get_active_symbols_excludes_on_delist_day(tmp_path: Path) -> None:
+    store = ParquetStore(tmp_path)
+    ds = SecurityMasterDataset(store)
+    frame = _sample_master().copy()
+    frame.loc[frame["symbol"] == "9999", "delist_date"] = pd.Timestamp("2020-06-30")
+    ds.save(frame)
+    active = ds.get_active_symbols("2020-06-30")
+    assert "9999" not in active  # delist_date == query date -> not active
+    active_before = ds.get_active_symbols("2020-06-29")
+    assert "9999" in active_before  # day before delist -> still active
